@@ -30,7 +30,7 @@ func (s *Server) Run() error {
 	// TODO принимать тут контекст и запустить тут ListenAndServe как горутину
 	//  с каналами, ошибками и т.д.
 	if err := s.httpServer.ListenAndServe(); err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
