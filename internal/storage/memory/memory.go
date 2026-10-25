@@ -1,9 +1,11 @@
 package memory
 
 import (
+	"context"
 	"fmt"
-	"github.com/thecodest22/YP_url-shortener/internal/storage"
 	"sync"
+
+	"github.com/thecodest22/YP_url-shortener/internal/storage"
 )
 
 // Storage - хранилище сокращенных URL'ов в памяти.
@@ -21,7 +23,7 @@ func New() *Storage {
 
 // Write - записывает значение по ключу.
 // storage.ErrAlreadyExists - если в хранилище уже есть запись под таким ключом.
-func (s *Storage) Write(key, val string) error {
+func (s *Storage) Write(_ context.Context, key, val string) error {
 	// Блочим на запись, иначе будут конфликты между потоками!
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -38,7 +40,7 @@ func (s *Storage) Write(key, val string) error {
 
 // Read - читает значение по ключу.
 // Пустая строка и storage.ErrNotFound - если значение не найдено.
-func (s *Storage) Read(key string) (string, error) {
+func (s *Storage) Read(_ context.Context, key string) (string, error) {
 	// Блочим на чтение. Читать параллельно можно, но будут конфликты,
 	// если кто-то будет писать!
 	s.mu.RLock()
