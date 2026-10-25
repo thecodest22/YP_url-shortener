@@ -14,11 +14,6 @@ const (
 	retriesMax = 10 // Количество попыток записи в хранилище
 )
 
-var (
-	ErrIDGenerationExhausted = errors.New("no free ID after retries")
-	ErrURLNotFound           = errors.New("entry with specified ID not found")
-)
-
 type urlStorage interface {
 	Read(ctx context.Context, key string) (string, error)
 	Write(ctx context.Context, key, val string) error
@@ -35,8 +30,13 @@ func NewURLShortener(storage urlStorage) *URLShortener {
 }
 
 // Shorten - выполняет сокращение URL, возвращает ID записи для последующего резолва.
-// ErrIDGenerationExhausted - если после всех попыток не удалось сгенерировать уникальный ID для хранения.
+// ErrIDGenerationExhausted - после всех попыток не удалось сгенерировать уникальный ID для хранения.
+// ErrInvalidURL - передан невалидный URL.
 func (s *URLShortener) Shorten(ctx context.Context, original string) (string, error) {
+	if err := validateURL(original); err != nil {
+		return "", err
+	}
+
 	for i := 0; i < retriesMax; i++ {
 		idGen := generateID(idLen)
 
