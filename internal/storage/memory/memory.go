@@ -2,7 +2,6 @@ package memory
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/thecodest22/YP_url-shortener/internal/storage"
@@ -30,7 +29,7 @@ func (s *Storage) Write(_ context.Context, key, val string) error {
 
 	// Проверяем, не существует ли уже запись с таким ключом.
 	if _, exists := s.urls[key]; exists {
-		return fmt.Errorf("storage write failed: %w", storage.ErrAlreadyExists)
+		return storage.ErrAlreadyExists
 	}
 
 	// Если все ОК, пишем значение.
@@ -39,7 +38,7 @@ func (s *Storage) Write(_ context.Context, key, val string) error {
 }
 
 // Read - читает значение по ключу.
-// Пустая строка и storage.ErrNotFound - если значение не найдено.
+// Пустая строка и storage.ErrNotExists - если значение не найдено.
 func (s *Storage) Read(_ context.Context, key string) (string, error) {
 	// Блочим на чтение. Читать параллельно можно, но будут конфликты,
 	// если кто-то будет писать!
@@ -48,7 +47,7 @@ func (s *Storage) Read(_ context.Context, key string) (string, error) {
 
 	val, exists := s.urls[key]
 	if !exists {
-		return "", fmt.Errorf("storage read failed: %w", storage.ErrNotFound)
+		return "", storage.ErrNotExists
 	}
 
 	return val, nil

@@ -3,6 +3,6 @@ package storage
 import "errors"
 
 var (
-	ErrNotFound      = errors.New("value not found")    // Значение не найдено по ключу
+	ErrNotExists     = errors.New("key not exists")     // Нет такого ключа в хранилище
 	ErrAlreadyExists = errors.New("key already exists") // На случай совпадения сгенерированного ключа
 )
