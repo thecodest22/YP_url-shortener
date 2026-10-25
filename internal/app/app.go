@@ -7,6 +7,7 @@ import (
 
 	"github.com/thecodest22/YP_url-shortener/internal/handler"
 	"github.com/thecodest22/YP_url-shortener/internal/httpserver"
+	"github.com/thecodest22/YP_url-shortener/internal/storage/memory"
 )
 
 // FIXME убрать, когда будем тянуть конфиги извне
@@ -25,7 +26,7 @@ func Run() error {
 
 	// TODO сбор конфигов
 
-	// TODO подключение репозиториев
+	_ = memory.New()
 
 	srv := httpserver.New(addr, handler.NewRouter(logger))
 	logger.Info(
