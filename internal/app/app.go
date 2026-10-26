@@ -7,6 +7,7 @@ import (
 
 	"github.com/thecodest22/YP_url-shortener/internal/handler"
 	"github.com/thecodest22/YP_url-shortener/internal/httpserver"
+	"github.com/thecodest22/YP_url-shortener/internal/service"
 	"github.com/thecodest22/YP_url-shortener/internal/storage/memory"
 )
 
@@ -14,6 +15,7 @@ import (
 const (
 	logLevel = slog.LevelDebug
 	addr     = "localhost:8080"
+	baseURL  = "http://localhost:8080"
 )
 
 // Run - оркестрирует запуск приложения.
@@ -26,9 +28,10 @@ func Run() error {
 
 	// TODO сбор конфигов
 
-	_ = memory.New()
+	st := memory.New()
+	svc := service.NewURLShortener(st)
+	srv := httpserver.New(addr, handler.NewRouter(logger, svc, baseURL))
 
-	srv := httpserver.New(addr, handler.NewRouter(logger))
 	logger.Info(
 		"starting http server",
 		"addr", addr,
