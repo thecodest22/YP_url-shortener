@@ -1,3 +1,3 @@
 module github.com/thecodest22/YP_url-shortener
 
-go 1.27.2
+go 1.27.0
