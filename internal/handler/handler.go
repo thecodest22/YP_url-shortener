@@ -32,5 +32,6 @@ func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handl
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", h.health)
+	mux.HandleFunc("POST /{$}", h.shorten) // "/{$}" означает не слушать тут запросы по каким-то другим маршрутам после слэша
 	return mux
 }
