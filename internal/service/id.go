@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
+// idCharset - символы для ключей: латиница в обоих регистрах и цифры (всего 62 символа).
 // FIXME убрать это, когда будем тянуть конфиги извне
-// Символы для ключей: латиница в обоих регистрах и цифры (всего 62 символа).
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const idCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 // generateID - сгенерировать ID-строку заданной длины.
 func generateID(length int) string {
@@ -15,8 +15,8 @@ func generateID(length int) string {
 	sb.Grow(length) // Оптимизируем выделение памяти под билдер.
 
 	for i := 0; i < length; i++ {
-		randIdx := rand.IntN(len(charset)) // Генерит в интервале [0, X)
-		sb.WriteByte(charset[randIdx])     // Пишем чистые байты в буфер: так быстрее и меньше памяти
+		randIdx := rand.IntN(len(idCharset)) // Генерит в интервале [0, X)
+		sb.WriteByte(idCharset[randIdx])     // Пишем чистые байты в буфер: так быстрее и меньше памяти
 	}
 
 	return sb.String()

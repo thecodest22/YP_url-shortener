@@ -56,6 +56,11 @@ func (s *URLShortener) Shorten(ctx context.Context, original string) (string, er
 // Resolve - получить значение оригинального URL по ID.
 // ErrURLNotFound - если не нашли записи с таким ID.
 func (s *URLShortener) Resolve(ctx context.Context, id string) (string, error) {
+	// Если заведомо невалидный ID, не идем в storage, а сразу отдаем ошибку, будто не нашли.
+	if !isIDValid(id) {
+		return "", ErrURLNotFound
+	}
+
 	res, err := s.storage.Read(ctx, id)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotExists) {

@@ -19,7 +19,7 @@ type urlShortener interface {
 	Shorten(ctx context.Context, original string) (id string, err error)
 
 	// Resolve - вернуть оригинальный URL по его ID.
-	Resolve(ctx context.Context, id string) (string, error)
+	Resolve(ctx context.Context, id string) (url string, err error)
 }
 
 // NewRouter - создает новый корневой роутер с нужными хэндлерами.
@@ -31,7 +31,8 @@ func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handl
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", h.health)
+	mux.HandleFunc("GET /{id}", h.resolve)
 	mux.HandleFunc("POST /{$}", h.shorten) // "/{$}" означает не слушать тут запросы по каким-то другим маршрутам после слэша
+	mux.HandleFunc("GET /healthz", h.health)
 	return mux
 }
