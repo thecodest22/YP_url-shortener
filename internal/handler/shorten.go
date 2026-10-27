@@ -3,12 +3,13 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"github.com/thecodest22/YP_url-shortener/internal/service"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/thecodest22/YP_url-shortener/internal/service"
 )
 
 // bodyMaxBytes - максимальный размер тела запроса. Ставлю мегабайт от балды.
