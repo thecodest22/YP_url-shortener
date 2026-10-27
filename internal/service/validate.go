@@ -35,7 +35,6 @@ func isIDValid(id string) bool {
 	// Когда идем циклом по строке, на выходе получаем руны.
 	// Поэтому используем специальный оптимизированный поиск руны в строке.
 	for _, c := range id {
-		// Возвращает -1, если символ не найден
 		if !strings.ContainsRune(idCharset, c) {
 			return false
 		}
