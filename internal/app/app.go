@@ -1,9 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/thecodest22/YP_url-shortener/internal/handler"
 	"github.com/thecodest22/YP_url-shortener/internal/httpserver"
@@ -22,7 +25,16 @@ const (
 // Выполняет подготовительные действия (тянет конфиги, подключает репы и т.д.),
 // инициализирует и запускает сервак.
 func Run() error {
-	// TODO объявление контекста
+	// Объявляем контекст, слушающий сигналы остановки.
+	ctx, stop := signal.NotifyContext(
+		context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP,
+	)
+	defer stop()
+	// Регистрация функции для немедленного вызова в момент отмены контекста.
+	// Нужно, чтобы при отмене контекста сразу вызвался stop, который отменит
+	// перехват сигналов. Иначе повторное нажатие Ctrl+C так и не будет
+	// принудительно завершать процесс, пока Run не доберется до defer stop().
+	context.AfterFunc(ctx, stop)
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 
@@ -32,13 +44,14 @@ func Run() error {
 	svc := service.NewURLShortener(st)
 	srv := httpserver.New(addr, handler.NewRouter(logger, svc, baseURL))
 
+	// TODO отдельно файлик с созданием логгера на основе конфигов
 	logger.Info(
 		"starting http server",
 		"addr", addr,
 		"log_level", logLevel,
 	)
 
-	if err := srv.Run(); err != nil {
+	if err := srv.Run(ctx); err != nil {
 		// Тут не будем логировать. Только врапаем ошибку,
 		// а все вместе залогируется в main.
 		return fmt.Errorf("http server: %w", err)
