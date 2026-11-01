@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/thecodest22/YP_url-shortener/internal/service"
+	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestHandlerShorten(t *testing.T) {
@@ -298,7 +300,7 @@ func TestHandlerShorten(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
 	for i, test := range tests {
-		t.Run(getSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.req.body))
 			if test.req.contentType != "" {
 				request.Header.Set("Content-Type", test.req.contentType)
@@ -382,7 +384,7 @@ func TestIsPlainText(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(getSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
 			assert.Equal(t, test.want, isPlainText(test.contentType))
 		})
 	}

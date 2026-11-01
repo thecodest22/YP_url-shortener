@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/thecodest22/YP_url-shortener/internal/service"
+	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestHandlerResolve(t *testing.T) {
@@ -137,7 +139,7 @@ func TestHandlerResolve(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
 	for i, test := range tests {
-		t.Run(getSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, baseURL+test.req.path, nil)
 
 			// Для отработки функции "resolve" у хэдлера должен быть сервис с соответствующей функцией.
