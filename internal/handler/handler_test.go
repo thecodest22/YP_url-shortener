@@ -21,7 +21,7 @@ type mockShorten struct {
 
 type mockResolve struct {
 	argID  string
-	retUrl string
+	retURL string
 	retErr error
 	calls  uint8
 }
@@ -46,7 +46,7 @@ func (s *mockURLShortener) Shorten(_ context.Context, url string) (string, error
 func (s *mockURLShortener) Resolve(_ context.Context, id string) (string, error) {
 	s.res.calls++
 	s.res.argID = id
-	return s.res.retUrl, s.res.retErr
+	return s.res.retURL, s.res.retErr
 }
 
 // ---------------------
