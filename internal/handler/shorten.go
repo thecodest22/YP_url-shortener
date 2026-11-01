@@ -98,7 +98,7 @@ func (h *handler) shorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Задаем заголовки, отправляем заголовки и ответ.
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusCreated)
 	// Можно писать через io.WriteString. Она проверяет у писателя метод, позволяющий писать без перевода в байты.
 	// Тогда, в отличие от w.Write([]byte(string)), не будет создаваться копия строки.
