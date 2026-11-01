@@ -37,7 +37,7 @@ func (s *URLShortener) Shorten(ctx context.Context, original string) (string, er
 		return "", err
 	}
 
-	for i := 0; i < retriesMax; i++ {
+	for range retriesMax {
 		idGen := generateID(idLen)
 
 		err := s.storage.Write(ctx, idGen, original)
