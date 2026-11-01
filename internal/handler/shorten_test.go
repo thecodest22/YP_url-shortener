@@ -332,3 +332,58 @@ func TestHandlerShorten(t *testing.T) {
 		})
 	}
 }
+
+func TestIsPlainText(t *testing.T) {
+	tests := []struct {
+		name        string
+		contentType string
+		want        bool
+	}{
+		{
+			name:        "positive: plain text simple",
+			contentType: "text/plain",
+			want:        true,
+		},
+		{
+			name:        "positive: plain text with params",
+			contentType: "text/plain; charset=utf-8",
+			want:        true,
+		},
+		{
+			name:        "positive: plain text case insensitive",
+			contentType: "Text/Plain",
+			want:        true,
+		},
+		{
+			name:        "negative: different media type",
+			contentType: "application/json",
+			want:        false,
+		},
+		{
+			name:        "negative: different media type",
+			contentType: "multipart/form-data",
+			want:        false,
+		},
+		{
+			name:        "negative: different media type",
+			contentType: "application/x-www-form-urlencoded",
+			want:        false,
+		},
+		{
+			name:        "negative: missing media type",
+			contentType: "",
+			want:        false,
+		},
+		{
+			name:        "negative: invalid content type params",
+			contentType: "text/plain; charset",
+			want:        false,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(getSubtestTitle(i+1, test.name), func(t *testing.T) {
+			assert.Equal(t, test.want, isPlainText(test.contentType))
+		})
+	}
+}
