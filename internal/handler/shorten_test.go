@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -64,6 +65,46 @@ func TestHandlerShorten(t *testing.T) {
 			},
 		},
 		{
+			name: "positive: boundary value for body size",
+			req: req{
+				contentType: "text/plain; charset=utf-8",
+				body:        "https://ya.ru/" + strings.Repeat("a", bodyMaxBytes-len("https://ya.ru/")),
+			},
+			setShorten: setShorten{
+				retID:  "abc12345",
+				retErr: nil,
+			},
+			wantShorten: wantShorten{
+				takeURL: "https://ya.ru/" + strings.Repeat("a", bodyMaxBytes-len("https://ya.ru/")),
+				calls:   1,
+			},
+			wantResp: wantResp{
+				code:        http.StatusCreated,
+				response:    baseURL + "/abc12345",
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+		{
+			name: "positive: body value whitespaces trimming",
+			req: req{
+				contentType: "text/plain; charset=utf-8",
+				body:        " \nhttps://ya.ru/\t\t", // До функции сервиса должно доехать без пробелов
+			},
+			setShorten: setShorten{
+				retID:  "abc12345",
+				retErr: nil,
+			},
+			wantShorten: wantShorten{
+				takeURL: "https://ya.ru/",
+				calls:   1,
+			},
+			wantResp: wantResp{
+				code:        http.StatusCreated,
+				response:    baseURL + "/abc12345",
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+		{
 			name: "positive: valid content-type and URL with extra path and params",
 			req: req{
 				contentType: "text/plain; charset=utf-8",
@@ -88,6 +129,20 @@ func TestHandlerShorten(t *testing.T) {
 			req: req{
 				contentType: "text/plain; charset=utf-8",
 				body:        "",
+			},
+			setShorten:  setShorten{},  // До него дело не дойдет
+			wantShorten: wantShorten{}, // calls должно быть 0
+			wantResp: wantResp{
+				code:        http.StatusBadRequest,
+				response:    "bad request\n",
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+		{
+			name: "negative: invalid body: contains whitespaces only",
+			req: req{
+				contentType: "text/plain; charset=utf-8",
+				body:        " \n\t ", // Проверка еще до Shorten сервиса
 			},
 			setShorten:  setShorten{},  // До него дело не дойдет
 			wantShorten: wantShorten{}, // calls должно быть 0
@@ -159,6 +214,26 @@ func TestHandlerShorten(t *testing.T) {
 			},
 		},
 		{
+			name: "negative: invalid body: not a URL passed, wrapped error",
+			req: req{
+				contentType: "text/plain; charset=utf-8",
+				body:        "foo",
+			},
+			setShorten: setShorten{
+				retID:  "",
+				retErr: fmt.Errorf("bad url: %w", service.ErrInvalidURL),
+			},
+			wantShorten: wantShorten{
+				takeURL: "foo",
+				calls:   1,
+			},
+			wantResp: wantResp{
+				code:        http.StatusBadRequest,
+				response:    "invalid url\n",
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+		{
 			name: "negative: service err: ID generation attempts exhausted",
 			req: req{
 				contentType: "text/plain; charset=utf-8",
@@ -167,6 +242,26 @@ func TestHandlerShorten(t *testing.T) {
 			setShorten: setShorten{
 				retID:  "",
 				retErr: service.ErrIDGenerationExhausted,
+			},
+			wantShorten: wantShorten{
+				takeURL: "https://ya.ru",
+				calls:   1,
+			},
+			wantResp: wantResp{
+				code:        http.StatusServiceUnavailable,
+				response:    "service unavailable\n",
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+		{
+			name: "negative: service err: ID generation attempts exhausted, wrapped error",
+			req: req{
+				contentType: "text/plain; charset=utf-8",
+				body:        "https://ya.ru",
+			},
+			setShorten: setShorten{
+				retID:  "",
+				retErr: fmt.Errorf("ID generation failed: %w", service.ErrIDGenerationExhausted),
 			},
 			wantShorten: wantShorten{
 				takeURL: "https://ya.ru",
