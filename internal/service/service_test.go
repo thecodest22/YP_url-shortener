@@ -17,7 +17,8 @@ type readCallArgs struct {
 type mockURLStorage struct {
 	// Сюда будем при инициализации явно добавлять ошибки или nil, соответствующие по порядку вызовам.
 	writeRetErrs []error
-	readRetErrs  []error
+	readRetURL   string
+	readRetErr   error
 	// Сюда будут записываться аргументы функции на каждый "вызов".
 	writeCalledArgs []writeCallArgs
 	readCalledArgs  []readCallArgs
@@ -39,6 +40,9 @@ func (s *mockURLStorage) Write(_ context.Context, key, val string) error {
 	return nil
 }
 
-func (s *mockURLStorage) Read(_ context.Context, _ string) (string, error) {
-	panic("unexpected Read call in Shorten test")
+func (s *mockURLStorage) Read(_ context.Context, key string) (string, error) {
+	s.readCalledArgs = append(s.readCalledArgs, readCallArgs{
+		key: key,
+	})
+	return s.readRetURL, s.readRetErr
 }
