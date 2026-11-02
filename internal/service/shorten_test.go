@@ -138,6 +138,8 @@ func TestServiceShorten(t *testing.T) {
 			for _, call := range st.writeCalledArgs {
 				assert.Equal(t, test.originalURL, call.val, "storage Write called with unexpected argument")
 			}
+
+			assert.Empty(t, st.readCalledArgs, "Shorten must not call Read")
 		})
 	}
 }
