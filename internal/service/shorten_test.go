@@ -128,7 +128,7 @@ func TestServiceShorten(t *testing.T) {
 					assert.Equal(t, st.writeCalledArgs[calls-1].key, id, "ID from Shorten must match ID into Write")
 				}
 			} else {
-				require.ErrorIs(t, err, test.wantShortenErr)
+				require.ErrorIs(t, err, test.wantShortenErr, "unexpected error return from Shorten")
 				assert.Empty(t, id, "ID must be empty on failure")
 			}
 			// Здесь проверяем через require, чтобы сразу тест отвалился, иначе дальше
