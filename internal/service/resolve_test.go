@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thecodest22/YP_url-shortener/internal/storage"
 
+	"github.com/thecodest22/YP_url-shortener/internal/storage"
 	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
@@ -75,7 +75,7 @@ func TestServiceResolve(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
-			// Для отработки функции "Shorten" у сервиса должно быть хранилище с методами "Write" и "Read".
+			// Для отработки функции "Resolve" у сервиса должно быть хранилище с методами "Write" и "Read".
 			// Настраиваем мок хранилища, чтобы его функция Read работала нужным образом.
 			st := &mockURLStorage{
 				readRetURL: test.readRetURL,
