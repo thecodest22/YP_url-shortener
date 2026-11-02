@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // handler - структура для использования в корневом роутере.
@@ -30,9 +32,9 @@ func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handl
 		baseURL: baseURL,
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{id}", h.resolve)
-	mux.HandleFunc("POST /{$}", h.shorten) // "/{$}" означает не слушать тут запросы по каким-то другим маршрутам после слэша
-	mux.HandleFunc("GET /healthz", h.health)
+	mux := chi.NewRouter()
+	mux.Get("/healthz", h.health)
+	mux.Post("/", h.shorten)
+	mux.Get("/{id}", h.resolve)
 	return mux
 }
