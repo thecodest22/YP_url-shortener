@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // handler - структура для использования в корневом роутере.
@@ -33,6 +34,7 @@ func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handl
 	}
 
 	mux := chi.NewRouter()
+	mux.Use(middleware.GetHead) // Добавляет обработку HEAD-запросов
 	mux.Get("/healthz", h.health)
 	mux.Post("/", h.shorten)
 	mux.Get("/{id}", h.resolve)
