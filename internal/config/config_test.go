@@ -81,13 +81,28 @@ func TestParse(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "negative: unknown args passed",
-			args: []string{"--foo", "bar"},
-			wantCfg: Config{
-				BaseURL:    "",
-				ServerAddr: "",
-			},
-			wantErr: testutil.ErrorAs[*pflag.NotExistError], // Тут функция только инициализируется из дженерика
+			name:    "negative: unknown args passed",
+			args:    []string{"--foo", "bar"},
+			wantCfg: Config{},
+			wantErr: testutil.ErrorAs[*pflag.NotExistError], // Тут функция только инициализируется из дженерика!
+		},
+		{
+			name:    "negative: invalid base-url: not a URL",
+			args:    []string{"-b", "bar"},
+			wantCfg: Config{},
+			wantErr: testutil.ErrorAs[*pflag.InvalidValueError],
+		},
+		{
+			name:    "negative: invalid base-url: unsupported scheme",
+			args:    []string{"-b", "ftp://foo.com"},
+			wantCfg: Config{},
+			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme), // Тут возвращается обычная функция
+		},
+		{
+			name:    "negative: invalid base-url: missing host name",
+			args:    []string{"-b", "http:///some-path"},
+			wantCfg: Config{},
+			wantErr: testutil.ErrorIs(ErrMissingURLHostname),
 		},
 	}
 
