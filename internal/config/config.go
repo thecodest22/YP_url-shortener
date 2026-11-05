@@ -9,19 +9,28 @@ import (
 	"log/slog"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/spf13/pflag"
 )
 
+// Константы нужны, т.к. ими пользуемся и при получении структуры конфигов с дефолтами,
+// и в тестах, чтобы обеспечить соответствие.
 const (
-	shortenerCmdName = "shortener"
-	defaultBaseURL   = "http://localhost:8080"
+	shortenerCmdName         = "shortener"
+	defaultLogLevel          = slog.LevelInfo
+	defaultServerAddr        = "localhost:8080"
+	defaultBaseURL           = "http://localhost:8080"
+	defaultReadHeaderTimeout = 5 * time.Second
+	defaultShutdownTimeout   = 5 * time.Second
 )
 
 type Config struct {
-	LogLevel   slog.Level
-	ServerAddr string
-	BaseURL    string
+	LogLevel          slog.Level
+	ServerAddr        string
+	BaseURL           string
+	ReadHeaderTimeout time.Duration
+	ShutdownTimeout   time.Duration
 }
 
 var (
@@ -40,6 +49,18 @@ var (
 	ErrMissingURLHostname   = errors.New("missing URL hostname")
 	ErrUnsupportedLogLevel  = errors.New("unsupported log level")
 )
+
+// defaultConfig отдает экземпляр структуры корневого конфига с дефолтами.
+// Потом поля этой структуры можно будет переопределять после чтения конфигов из env и/или из CLI.
+func defaultConfig() Config {
+	return Config{
+		LogLevel:          defaultLogLevel,
+		ServerAddr:        defaultServerAddr,
+		BaseURL:           defaultBaseURL,
+		ReadHeaderTimeout: defaultReadHeaderTimeout,
+		ShutdownTimeout:   defaultShutdownTimeout,
+	}
+}
 
 // validateBaseURL валидирует "--base-url" из командной строки.
 func validateBaseURL(value string) error {
@@ -72,16 +93,12 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 		&cfg.ServerAddr,
 		"server-address",
 		"a",
-		"localhost:8080",
+		cfg.ServerAddr,
 		"HTTP server listen address",
 	)
 
-	// Руками ставим дефолты, т.к. при применении кастомной функции-валидатора
-	// дефолты автоматически ставиться не будут!
-	cfg.LogLevel = slog.LevelInfo
-	cfg.BaseURL = defaultBaseURL
-
-	// Регистрируем аргументы с кастомными обработчиками. Они не ставит дефолты.
+	// Регистрируем аргументы с кастомными обработчиками.
+	// Они не ставит дефолты, но мы заранее получаем дефолтную конфигурацию, прежде чем она сюда попадет.
 	// До функции-валидатора дело доходит, только если аргумент передан и распарсен.
 	// Здесь мы должны сами проверить формат, значение и т.д.
 	flagSet.FuncP(
@@ -127,6 +144,7 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 
 // Заюзал init просто ради экспириенса
 func init() {
+	cfg = defaultConfig()
 	// Присваиваем результат в переменную пакета. Затем в тестах будем делать
 	// то же самое, чтобы реинициализировать флагсет с его дефолтами.
 	fs = newFlagSet(&cfg)

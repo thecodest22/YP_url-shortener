@@ -8,7 +8,6 @@ import (
 	"github.com/thecodest22/YP_url-shortener/internal/storage"
 )
 
-// FIXME Убрать это, когда будем тянуть конфиги извне
 const (
 	idLen      = 8  // Длина ключа, возвращаемого на фронт
 	retriesMax = 10 // Количество попыток записи в хранилище

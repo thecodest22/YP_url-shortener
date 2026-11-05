@@ -19,22 +19,20 @@ func TestParse(t *testing.T) {
 		wantErr testutil.ErrorCheck
 	}{
 		{
-			name: "positive: no args passed",
-			args: []string{},
-			wantCfg: Config{
-				LogLevel:   slog.LevelInfo,
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
-			},
+			name:    "positive: no args passed",
+			args:    []string{},
+			wantCfg: defaultConfig(),
 			wantErr: nil,
 		},
 		{
 			name: "positive: valid log level",
 			args: []string{"-l", "debug"},
 			wantCfg: Config{
-				LogLevel:   slog.LevelDebug,
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelDebug,
+				BaseURL:           defaultBaseURL,
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -42,9 +40,11 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"--log-level", "DEBUG"},
 			wantCfg: Config{
-				LogLevel:   slog.LevelDebug,
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelDebug,
+				BaseURL:           defaultBaseURL,
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -52,9 +52,11 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"-l", "warn"},
 			wantCfg: Config{
-				LogLevel:   slog.LevelWarn,
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelWarn,
+				BaseURL:           defaultBaseURL,
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -62,9 +64,11 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"-l", "error"},
 			wantCfg: Config{
-				LogLevel:   slog.LevelError,
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelError,
+				BaseURL:           defaultBaseURL,
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -72,8 +76,11 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed with full name",
 			args: []string{"--base-url", "http://foo.com"},
 			wantCfg: Config{
-				BaseURL:    "http://foo.com",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelInfo,
+				BaseURL:           "http://foo.com",
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -81,8 +88,11 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed with shorthand",
 			args: []string{"-b", "http://foo.com"},
 			wantCfg: Config{
-				BaseURL:    "http://foo.com",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelInfo,
+				BaseURL:           "http://foo.com",
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -90,8 +100,11 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"-b", "http://foo.com", "-b", "http://ya.ru"},
 			wantCfg: Config{
-				BaseURL:    "http://ya.ru",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelInfo,
+				BaseURL:           "http://ya.ru",
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -99,8 +112,11 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"-b", "http://foo.com", "--base-url", "http://ya.ru"},
 			wantCfg: Config{
-				BaseURL:    "http://ya.ru",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelInfo,
+				BaseURL:           "http://ya.ru",
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
@@ -108,18 +124,18 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"--base-url", "http://foo.com", "-b", "http://ya.ru"},
 			wantCfg: Config{
-				BaseURL:    "http://ya.ru",
-				ServerAddr: "localhost:8080",
+				LogLevel:          slog.LevelInfo,
+				BaseURL:           "http://ya.ru",
+				ServerAddr:        defaultServerAddr,
+				ReadHeaderTimeout: defaultReadHeaderTimeout,
+				ShutdownTimeout:   defaultShutdownTimeout,
 			},
 			wantErr: nil,
 		},
 		{
-			name: "positive: ignorable position args passed",
-			args: []string{"foo", "bar"},
-			wantCfg: Config{
-				BaseURL:    "http://localhost:8080",
-				ServerAddr: "localhost:8080",
-			},
+			name:    "positive: ignorable position args passed",
+			args:    []string{"foo", "bar"},
+			wantCfg: defaultConfig(),
 			wantErr: nil,
 		},
 		{
@@ -168,7 +184,7 @@ func TestParse(t *testing.T) {
 			})
 
 			// Приводим переменные пакета в дефолтное состояние для текущего теста.
-			cfg = Config{}
+			cfg = defaultConfig()
 			fs = newFlagSet(&cfg)
 
 			gotCfg, err := Parse(test.args)

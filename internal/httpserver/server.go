@@ -10,25 +10,30 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// FIXME убрать это, когда начнем тянуть конфиги извне
-const readHeaderTimeout = 5 * time.Second
+// Config набор конфигов для сервера.
+type Config struct {
+	Addr              string
+	ReadHeaderTimeout time.Duration
+	ShutdownTimeout   time.Duration
+}
 
 // Server - http-сервер приложения.
 type Server struct {
-	httpServer *http.Server
+	httpServer      *http.Server
+	shutdownTimeout time.Duration
 }
 
 // New - инициализирует http-сервер с ручками.
 // Принимаем на вход хэндлер (будем передавать "корневой" роутер), и тогда сервер будет
 // слушать запросы и передавать в функции этого хэндлера (их регистрируем соппсна на корневом роутере).
-// TODO принимать не только адрес, а сразу структуру конфигов (адрес, таймауты...)
-func New(addr string, h http.Handler) *Server {
+func New(cfg Config, h http.Handler) *Server {
 	return &Server{
 		httpServer: &http.Server{
-			Addr:              addr,
+			Addr:              cfg.Addr,
 			Handler:           h,
-			ReadHeaderTimeout: readHeaderTimeout,
+			ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		},
+		shutdownTimeout: cfg.ShutdownTimeout,
 	}
 }
 
@@ -66,7 +71,7 @@ func (s *Server) Run(ctx context.Context) error {
 	// 2) Горутина остановки сервака при отмене или ошибке другой горутины.
 	g.Go(func() error {
 		<-gCtx.Done() // В случае ошибки другой горутины здесь будет как будто отмена.
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 		defer cancel()
 		return s.httpServer.Shutdown(shutdownCtx)
 	})

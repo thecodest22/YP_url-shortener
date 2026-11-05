@@ -6,7 +6,6 @@ import (
 )
 
 // idCharset - символы для ключей: латиница в обоих регистрах и цифры (всего 62 символа).
-// FIXME убрать это, когда будем тянуть конфиги извне
 const idCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 // generateID - сгенерировать ID-строку заданной длины.
