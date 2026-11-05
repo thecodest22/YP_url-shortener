@@ -6,7 +6,9 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -17,18 +19,26 @@ const (
 )
 
 type Config struct {
+	LogLevel   slog.Level
 	ServerAddr string
 	BaseURL    string
 }
 
 var (
-	cfg Config
-	fs  *pflag.FlagSet
+	cfg       Config
+	fs        *pflag.FlagSet
+	logLevels = map[string]slog.Level{
+		"debug": slog.LevelDebug,
+		"info":  slog.LevelInfo,
+		"warn":  slog.LevelWarn,
+		"error": slog.LevelError,
+	}
 )
 
 var (
 	ErrUnsupportedURLScheme = errors.New("unsupported URL scheme")
 	ErrMissingURLHostname   = errors.New("missing URL hostname")
+	ErrUnsupportedLogLevel  = errors.New("unsupported log level")
 )
 
 // validateBaseURL валидирует "--base-url" из командной строки.
@@ -68,9 +78,10 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 
 	// Руками ставим дефолты, т.к. при применении кастомной функции-валидатора
 	// дефолты автоматически ставиться не будут!
+	cfg.LogLevel = slog.LevelInfo
 	cfg.BaseURL = defaultBaseURL
 
-	// Регистрируем аргумент с кастомным обработчиком. Он не ставит дефолты.
+	// Регистрируем аргументы с кастомными обработчиками. Они не ставит дефолты.
 	// До функции-валидатора дело доходит, только если аргумент передан и распарсен.
 	// Здесь мы должны сами проверить формат, значение и т.д.
 	flagSet.FuncP(
@@ -88,6 +99,25 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 
 			// Сохраняем только успешно проверенное значение.
 			cfg.BaseURL = value
+			return nil
+		},
+	)
+
+	flagSet.FuncP(
+		"log-level",
+		"l",
+		"log level",
+		func(value string) error {
+			lvl, exists := logLevels[strings.ToLower(value)]
+			if !exists {
+				return fmt.Errorf(
+					"%w: unsupported level %q, allowed levels: 'debug', 'info', 'warn', 'error'",
+					ErrUnsupportedLogLevel,
+					value,
+				)
+			}
+
+			cfg.LogLevel = lvl
 			return nil
 		},
 	)

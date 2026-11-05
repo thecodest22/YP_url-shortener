@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/spf13/pflag"
@@ -21,6 +22,47 @@ func TestParse(t *testing.T) {
 			name: "positive: no args passed",
 			args: []string{},
 			wantCfg: Config{
+				LogLevel:   slog.LevelInfo,
+				BaseURL:    "http://localhost:8080",
+				ServerAddr: "localhost:8080",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "positive: valid log level",
+			args: []string{"-l", "debug"},
+			wantCfg: Config{
+				LogLevel:   slog.LevelDebug,
+				BaseURL:    "http://localhost:8080",
+				ServerAddr: "localhost:8080",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "positive: valid log level",
+			args: []string{"--log-level", "DEBUG"},
+			wantCfg: Config{
+				LogLevel:   slog.LevelDebug,
+				BaseURL:    "http://localhost:8080",
+				ServerAddr: "localhost:8080",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "positive: valid log level",
+			args: []string{"-l", "warn"},
+			wantCfg: Config{
+				LogLevel:   slog.LevelWarn,
+				BaseURL:    "http://localhost:8080",
+				ServerAddr: "localhost:8080",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "positive: valid log level",
+			args: []string{"-l", "error"},
+			wantCfg: Config{
+				LogLevel:   slog.LevelError,
 				BaseURL:    "http://localhost:8080",
 				ServerAddr: "localhost:8080",
 			},
@@ -93,10 +135,16 @@ func TestParse(t *testing.T) {
 			wantErr: testutil.ErrorAs[*pflag.InvalidValueError],
 		},
 		{
+			name:    "negative: invalid log level",
+			args:    []string{"--log-level", "critical"},
+			wantCfg: Config{},
+			wantErr: testutil.ErrorIs(ErrUnsupportedLogLevel), // Тут возвращается обычная функция
+		},
+		{
 			name:    "negative: invalid base-url: unsupported scheme",
 			args:    []string{"-b", "ftp://foo.com"},
 			wantCfg: Config{},
-			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme), // Тут возвращается обычная функция
+			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
 		},
 		{
 			name:    "negative: invalid base-url: missing host name",
