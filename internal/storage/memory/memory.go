@@ -9,7 +9,7 @@ import (
 
 // Storage - хранилище сокращенных URL'ов в памяти.
 type Storage struct {
-	mu   sync.RWMutex // Инициализировать не нужно, zero value уже рабочий!
+	mu   sync.Mutex // Инициализировать не нужно, zero value уже рабочий!
 	urls map[string]string
 }
 
@@ -42,8 +42,8 @@ func (s *Storage) Write(_ context.Context, key, val string) error {
 func (s *Storage) Read(_ context.Context, key string) (string, error) {
 	// Блочим на чтение. Читать параллельно можно, но будут конфликты,
 	// если кто-то будет писать!
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	val, exists := s.urls[key]
 	if !exists {

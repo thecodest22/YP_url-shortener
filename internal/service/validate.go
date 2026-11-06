@@ -6,14 +6,6 @@ import (
 	"strings"
 )
 
-// idCharsetRegex - скомпилированная регулярка для проверки допустимых символов в ID.
-//var idCharsetRegex = regexp.MustCompile(
-//	// regexp.QuoteMeta() экранирует символы, чтобы они не интерпретировались
-//	// регуляркой как управляющие (вдруг добавим дефисы и прочую шелуху).
-//	// Получится паттерн: ^[abc...789\-_]+$
-//	"^[" + regexp.QuoteMeta(idCharset) + "]+$",
-//)
-
 // isSupportedScheme - является ли схема URL поддерживаемой.
 func isSupportedScheme(scheme string) bool {
 	switch scheme {
