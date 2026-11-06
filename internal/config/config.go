@@ -25,12 +25,16 @@ const (
 	defaultShutdownTimeout   = 5 * time.Second
 )
 
-type Config struct {
-	LogLevel          slog.Level
-	ServerAddr        string
-	BaseURL           string
+type ServerConfig struct {
+	Addr              string
 	ReadHeaderTimeout time.Duration
 	ShutdownTimeout   time.Duration
+}
+
+type Config struct {
+	Server   *ServerConfig
+	LogLevel slog.Level
+	BaseURL  string
 }
 
 var (
@@ -54,11 +58,13 @@ var (
 // Потом поля этой структуры можно будет переопределять после чтения конфигов из env и/или из CLI.
 func defaultConfig() Config {
 	return Config{
-		LogLevel:          defaultLogLevel,
-		ServerAddr:        defaultServerAddr,
-		BaseURL:           defaultBaseURL,
-		ReadHeaderTimeout: defaultReadHeaderTimeout,
-		ShutdownTimeout:   defaultShutdownTimeout,
+		Server: &ServerConfig{
+			Addr:              defaultServerAddr,
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
+			ShutdownTimeout:   defaultShutdownTimeout,
+		},
+		LogLevel: defaultLogLevel,
+		BaseURL:  defaultBaseURL,
 	}
 }
 
@@ -90,10 +96,10 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 	// Это будем расценивать, как обычный строковый флаг, без кастомных валидаций.
 	// Тут дефолтное значение при отсутствии аргумента будет задаваться автоматически.
 	flagSet.StringVarP(
-		&cfg.ServerAddr,
+		&cfg.Server.Addr,
 		"server-address",
 		"a",
-		cfg.ServerAddr,
+		defaultServerAddr,
 		"HTTP server listen address",
 	)
 

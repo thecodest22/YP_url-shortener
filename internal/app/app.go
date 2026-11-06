@@ -48,18 +48,11 @@ func Run() error {
 
 	st := memory.New()
 	svc := service.NewURLShortener(st)
-	srv := httpserver.New(
-		httpserver.Config{
-			Addr:              cfg.ServerAddr,
-			ReadHeaderTimeout: cfg.ReadHeaderTimeout,
-			ShutdownTimeout:   cfg.ShutdownTimeout,
-		},
-		handler.NewRouter(logger, svc, cfg.BaseURL),
-	)
+	srv := httpserver.New(*cfg.Server, handler.NewRouter(logger, svc, cfg.BaseURL))
 
 	logger.Info(
 		"starting http server",
-		"addr", cfg.ServerAddr,
+		"addr", cfg.Server.Addr,
 		"log_level", cfg.LogLevel,
 	)
 
