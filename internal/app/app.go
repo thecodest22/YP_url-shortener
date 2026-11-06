@@ -24,7 +24,7 @@ func Run() error {
 	cfg, err := config.Parse(os.Args[1:])
 
 	// Если это был флаг --help, это тоже считается "ошибкой", но на самом деле
-	// pflag вывел справку, хотя это считается ошибкой. Тогда просто завершаем приложение.
+	// pflag вывел справку. Тогда просто завершаем приложение.
 	// Если же реально ошибка парсинга, возвращаем ошибку.
 	if err != nil {
 		if errors.Is(err, pflag.ErrHelp) {
@@ -57,7 +57,6 @@ func Run() error {
 		handler.NewRouter(logger, svc, cfg.BaseURL),
 	)
 
-	// TODO отдельно файлик с созданием логгера на основе конфигов
 	logger.Info(
 		"starting http server",
 		"addr", cfg.ServerAddr,
