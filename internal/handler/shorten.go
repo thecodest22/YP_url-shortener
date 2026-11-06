@@ -59,7 +59,7 @@ func (h *handler) shorten(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// По ТЗ любая кривой запрос - отдаем 400.
 		h.logger.Debug("bad shorten request", "err", err)
-		http.Error(w, "bad request", http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
@@ -78,12 +78,12 @@ func (h *handler) shorten(w http.ResponseWriter, r *http.Request) {
 		// Логируем уровнем ERROR, т.к. такое надо в логах видеть.
 		case errors.Is(err, service.ErrIDGenerationExhausted):
 			h.logger.Error("shorten url", "err", err)
-			http.Error(w, "service unavailable", http.StatusServiceUnavailable)
+			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 
 		// Неизвестный сбой - все плохо, клиенту 500, в логи ERROR.
 		default:
 			h.logger.Error("shorten url", "err", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -93,7 +93,7 @@ func (h *handler) shorten(w http.ResponseWriter, r *http.Request) {
 	shortURL, err := url.JoinPath(h.baseURL, id)
 	if err != nil {
 		h.logger.Error("build short url", "base_url", h.baseURL, "id", id, "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 

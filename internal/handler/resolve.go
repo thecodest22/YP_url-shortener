@@ -17,13 +17,13 @@ func (h *handler) resolve(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// По ТЗ на любой кривой запрос отдаем 400.
 		if errors.Is(err, service.ErrURLNotFound) {
-			http.Error(w, "bad request", http.StatusBadRequest)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		// Если непредвиденная ошибка, 500
 		h.logger.Error("resolve ID", "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
