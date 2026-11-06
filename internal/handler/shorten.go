@@ -78,7 +78,7 @@ func (h *handler) shorten(w http.ResponseWriter, r *http.Request) {
 		// Логируем уровнем ERROR, т.к. такое надо в логах видеть.
 		case errors.Is(err, service.ErrIDGenerationExhausted):
 			h.logger.Error("shorten url", "err", err)
-			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 
 		// Неизвестный сбой - все плохо, клиенту 500, в логи ERROR.
 		default:
