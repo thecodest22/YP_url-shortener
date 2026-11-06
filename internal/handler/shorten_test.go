@@ -136,7 +136,7 @@ func TestHandlerShorten(t *testing.T) {
 			wantShorten: wantShorten{}, // calls должно быть 0
 			wantResp: wantResp{
 				code:        http.StatusBadRequest,
-				response:    "bad request\n",
+				response:    http.StatusText(http.StatusBadRequest) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -150,7 +150,7 @@ func TestHandlerShorten(t *testing.T) {
 			wantShorten: wantShorten{}, // calls должно быть 0
 			wantResp: wantResp{
 				code:        http.StatusBadRequest,
-				response:    "bad request\n",
+				response:    http.StatusText(http.StatusBadRequest) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -164,7 +164,7 @@ func TestHandlerShorten(t *testing.T) {
 			wantShorten: wantShorten{}, // calls должно быть 0
 			wantResp: wantResp{
 				code:        http.StatusBadRequest,
-				response:    "bad request\n",
+				response:    http.StatusText(http.StatusBadRequest) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -177,7 +177,7 @@ func TestHandlerShorten(t *testing.T) {
 			wantShorten: wantShorten{}, // calls должно быть 0
 			wantResp: wantResp{
 				code:        http.StatusBadRequest,
-				response:    "bad request\n",
+				response:    http.StatusText(http.StatusBadRequest) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -191,7 +191,7 @@ func TestHandlerShorten(t *testing.T) {
 			wantShorten: wantShorten{}, // calls должно быть 0
 			wantResp: wantResp{
 				code:        http.StatusBadRequest,
-				response:    "bad request\n",
+				response:    http.StatusText(http.StatusBadRequest) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -250,8 +250,8 @@ func TestHandlerShorten(t *testing.T) {
 				calls:   1,
 			},
 			wantResp: wantResp{
-				code:        http.StatusServiceUnavailable,
-				response:    "service unavailable\n",
+				code:        http.StatusInternalServerError,
+				response:    http.StatusText(http.StatusInternalServerError) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -270,8 +270,8 @@ func TestHandlerShorten(t *testing.T) {
 				calls:   1,
 			},
 			wantResp: wantResp{
-				code:        http.StatusServiceUnavailable,
-				response:    "service unavailable\n",
+				code:        http.StatusInternalServerError,
+				response:    http.StatusText(http.StatusInternalServerError) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -291,7 +291,7 @@ func TestHandlerShorten(t *testing.T) {
 			},
 			wantResp: wantResp{
 				code:        http.StatusInternalServerError,
-				response:    "internal error\n",
+				response:    http.StatusText(http.StatusInternalServerError) + "\n",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
