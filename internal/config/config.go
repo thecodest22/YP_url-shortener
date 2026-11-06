@@ -38,8 +38,6 @@ type Config struct {
 }
 
 var (
-	cfg       Config
-	fs        *pflag.FlagSet
 	logLevels = map[string]slog.Level{
 		"debug": slog.LevelDebug,
 		"info":  slog.LevelInfo,
@@ -148,16 +146,11 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 	return flagSet
 }
 
-// Заюзал init просто ради экспириенса
-func init() {
-	cfg = defaultConfig()
-	// Присваиваем результат в переменную пакета. Затем в тестах будем делать
-	// то же самое, чтобы реинициализировать флагсет с его дефолтами.
-	fs = newFlagSet(&cfg)
-}
-
 // Parse разбирает аргументы командной строки и кладет в структуру конфига.
 func Parse(args []string) (Config, error) {
+	cfg := defaultConfig()
+	fs := newFlagSet(&cfg)
+
 	if err := fs.Parse(args); err != nil {
 		return Config{}, err
 	}

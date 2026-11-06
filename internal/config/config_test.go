@@ -192,18 +192,18 @@ func TestParse(t *testing.T) {
 		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
 			// Т.к. мы работаем с переменными пакета,
 			// нужно сначала сохранить состояние, которое было до теста:
-			savedCfg, savedFS := cfg, fs
+			//savedCfg, savedFS := cfg, fs
 
 			// Регистрируем восстановление с помощью специальной функции.
 			// Она выполнится после завершения теста (даже если упадет на require).
-			t.Cleanup(func() {
-				cfg = savedCfg
-				fs = savedFS
-			})
+			//t.Cleanup(func() {
+			//	cfg = savedCfg
+			//	fs = savedFS
+			//})
 
 			// Приводим переменные пакета в дефолтное состояние для текущего теста.
-			cfg = defaultConfig()
-			fs = newFlagSet(&cfg)
+			//cfg = defaultConfig()
+			//fs = newFlagSet(&cfg)
 
 			gotCfg, err := Parse(test.args)
 
