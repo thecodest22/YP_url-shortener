@@ -28,7 +28,7 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"-l", "debug"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -42,7 +42,7 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"--log-level", "DEBUG"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -56,7 +56,7 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"-l", "warn"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -70,7 +70,7 @@ func TestParse(t *testing.T) {
 			name: "positive: valid log level",
 			args: []string{"-l", "error"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -84,7 +84,7 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed with full name",
 			args: []string{"--base-url", "http://foo.com"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -98,7 +98,7 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed with shorthand",
 			args: []string{"-b", "http://foo.com"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -112,7 +112,7 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"-b", "http://foo.com", "-b", "http://ya.ru"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -126,7 +126,7 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"-b", "http://foo.com", "--base-url", "http://ya.ru"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
@@ -140,7 +140,7 @@ func TestParse(t *testing.T) {
 			name: "positive: base URL passed twice",
 			args: []string{"--base-url", "http://foo.com", "-b", "http://ya.ru"},
 			wantCfg: Config{
-				Server: &ServerConfig{
+				Server: ServerConfig{
 					Addr:              defaultServerAddr,
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,

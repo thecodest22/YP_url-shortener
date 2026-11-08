@@ -48,7 +48,7 @@ func Run() error {
 
 	st := memory.New()
 	svc := service.NewURLShortener(st)
-	srv := httpserver.New(*cfg.Server, handler.NewRouter(logger, svc, cfg.BaseURL))
+	srv := httpserver.New(cfg.Server, handler.NewRouter(logger, svc, cfg.BaseURL))
 
 	logger.Info(
 		"starting http server",
