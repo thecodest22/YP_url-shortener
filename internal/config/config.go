@@ -32,7 +32,7 @@ type ServerConfig struct {
 }
 
 type Config struct {
-	Server   *ServerConfig
+	Server   ServerConfig
 	LogLevel slog.Level
 	BaseURL  string
 }
@@ -56,7 +56,7 @@ var (
 // Потом поля этой структуры можно будет переопределять после чтения конфигов из env и/или из CLI.
 func defaultConfig() Config {
 	return Config{
-		Server: &ServerConfig{
+		Server: ServerConfig{
 			Addr:              defaultServerAddr,
 			ReadHeaderTimeout: defaultReadHeaderTimeout,
 			ShutdownTimeout:   defaultShutdownTimeout,

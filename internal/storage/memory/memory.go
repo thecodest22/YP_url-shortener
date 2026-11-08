@@ -40,8 +40,6 @@ func (s *Storage) Write(_ context.Context, key, val string) error {
 // Read - читает значение по ключу.
 // Пустая строка и storage.ErrNotExists - если значение не найдено.
 func (s *Storage) Read(_ context.Context, key string) (string, error) {
-	// Блочим на чтение. Читать параллельно можно, но будут конфликты,
-	// если кто-то будет писать!
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
