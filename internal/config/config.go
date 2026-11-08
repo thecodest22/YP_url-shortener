@@ -25,12 +25,14 @@ const (
 	defaultShutdownTimeout   = 5 * time.Second
 )
 
+// ServerConfig - конфиги сервера.
 type ServerConfig struct {
 	Addr              string
 	ReadHeaderTimeout time.Duration
 	ShutdownTimeout   time.Duration
 }
 
+// Config - корневой конфиг приложения.
 type Config struct {
 	Server   ServerConfig
 	LogLevel slog.Level
@@ -38,6 +40,7 @@ type Config struct {
 }
 
 var (
+	// logLevels - мапа для сопоставления значений флага CLI с константами пакета логирования.
 	logLevels = map[string]slog.Level{
 		"debug": slog.LevelDebug,
 		"info":  slog.LevelInfo,
@@ -86,8 +89,6 @@ func validateBaseURL(value string) error {
 }
 
 // newFlagSet объявляет флаги для парсинга.
-// Пришлось вынести в отдельную функцию из init, чтобы было удобно тестировать.
-// Иначе после парсинга аргументов изменяется общее состояние, дефолты слетают.
 func newFlagSet(cfg *Config) *pflag.FlagSet {
 	flagSet := pflag.NewFlagSet(shortenerCmdName, pflag.ContinueOnError)
 
