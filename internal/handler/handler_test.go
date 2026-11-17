@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
@@ -100,9 +101,12 @@ func TestRouter_Routing(t *testing.T) {
 	for i, test := range tests {
 		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
 			svc := &mockURLShortener{}
-			mux := NewRouter(logger, svc, baseURL)
+
+			router, err := NewRouter(logger, svc, baseURL)
+			require.NoError(t, err, "router init failed")
+
 			w := httptest.NewRecorder()
-			mux.ServeHTTP(w, httptest.NewRequest(test.method, baseURL+test.path, nil))
+			router.ServeHTTP(w, httptest.NewRequest(test.method, baseURL+test.path, nil))
 
 			response := w.Result()
 			defer response.Body.Close()

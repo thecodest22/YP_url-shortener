@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStatusHandler(t *testing.T) {
@@ -47,7 +48,8 @@ func TestStatusHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			// Функция "healthz" не работает с сервисом, поэтому передаем nil вместо сервиса.
-			router := NewRouter(logger, nil, baseURL)
+			router, err := NewRouter(logger, nil, baseURL)
+			require.NoError(t, err, "router init failed")
 
 			// Вызовем не просто метод на структуре хэндлера, а именно через ServeHTTP,
 			// поскольку так мы проверим еще и правильность маршрута, и допустимость метода.

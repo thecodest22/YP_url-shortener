@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/thecodest22/YP_url-shortener/internal/service"
 	"github.com/thecodest22/YP_url-shortener/internal/testutil"
@@ -315,7 +316,9 @@ func TestHandlerShorten(t *testing.T) {
 				},
 			}
 
-			router := NewRouter(logger, svc, baseURL)
+			router, err := NewRouter(logger, svc, baseURL)
+			require.NoError(t, err, "router init failed")
+
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, request)
 
