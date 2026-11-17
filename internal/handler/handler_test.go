@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,6 +56,61 @@ func (s *mockURLShortener) Resolve(_ context.Context, id string) (string, error)
 	s.res.calls++
 	s.res.argID = id
 	return s.res.retURL, s.res.retErr
+}
+
+func TestNewRouter(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		wantErr testutil.ErrorCheck
+	}{
+		{
+			name:    "positive: valid URL with http scheme",
+			url:     "http://localhost:8080",
+			wantErr: nil,
+		},
+		{
+			name:    "positive: valid URL with https scheme",
+			url:     "https://google.com",
+			wantErr: nil,
+		},
+		{
+			name:    "negative: not a URL",
+			url:     "foo",
+			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
+		},
+		{
+			name:    "negative: unsupported scheme",
+			url:     "ftp://foo.com",
+			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
+		},
+		{
+			name:    "negative: missing hostname",
+			url:     "https:///foo",
+			wantErr: testutil.ErrorIs(ErrMissingURLHostname),
+		},
+		{
+			name:    "negative: invalid URL escape",
+			url:     "http://example.com/%zz",
+			wantErr: testutil.ErrorAs[*url.Error],
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+
+			router, err := NewRouter(nil, nil, test.url)
+
+			// ------- Проверки -------
+			if test.wantErr != nil {
+				test.wantErr(t, err)
+				assert.Nil(t, router)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, router)
+		})
+	}
 }
 
 func TestRouter_Routing(t *testing.T) {
