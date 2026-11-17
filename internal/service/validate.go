@@ -33,9 +33,6 @@ func isIDValid(id string) bool {
 	}
 
 	return true
-
-	// Проверка регуляркой (медленнее, но лаконичнее).
-	//return idCharsetRegex.MatchString(id)
 }
 
 // validateURL - валидирует переданный URL.
