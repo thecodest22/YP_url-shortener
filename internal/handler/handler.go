@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -26,7 +27,15 @@ type urlShortener interface {
 }
 
 // NewRouter - создает новый корневой роутер с нужными хэндлерами.
-func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handler {
+func NewRouter(
+	logger *slog.Logger,
+	svc urlShortener,
+	baseURL string,
+) (http.Handler, error) {
+	if err := validateBaseURL(baseURL); err != nil {
+		return nil, fmt.Errorf("base URL: %w", err)
+	}
+
 	h := &handler{
 		logger:  logger,
 		svc:     svc,
@@ -38,5 +47,5 @@ func NewRouter(logger *slog.Logger, svc urlShortener, baseURL string) http.Handl
 	mux.Get("/healthz", h.health)
 	mux.Post("/", h.shorten)
 	mux.Get("/{id}", h.resolve)
-	return mux
+	return mux, nil
 }

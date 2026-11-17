@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/url"
 	"strings"
 	"time"
 
@@ -32,11 +31,19 @@ type ServerConfig struct {
 	ShutdownTimeout   time.Duration
 }
 
+type LoggerConfig struct {
+	Level slog.Level
+}
+
+type HandlerConfig struct {
+	BaseURL string
+}
+
 // Config - корневой конфиг приложения.
 type Config struct {
-	Server   ServerConfig
-	LogLevel slog.Level
-	BaseURL  string
+	Server  ServerConfig
+	Logger  LoggerConfig
+	Handler HandlerConfig
 }
 
 var (
@@ -50,9 +57,7 @@ var (
 )
 
 var (
-	ErrUnsupportedURLScheme = errors.New("unsupported URL scheme")
-	ErrMissingURLHostname   = errors.New("missing URL hostname")
-	ErrUnsupportedLogLevel  = errors.New("unsupported log level")
+	ErrUnsupportedLogLevel = errors.New("unsupported log level")
 )
 
 // defaultConfig отдает экземпляр структуры корневого конфига с дефолтами.
@@ -64,28 +69,13 @@ func defaultConfig() Config {
 			ReadHeaderTimeout: defaultReadHeaderTimeout,
 			ShutdownTimeout:   defaultShutdownTimeout,
 		},
-		LogLevel: defaultLogLevel,
-		BaseURL:  defaultBaseURL,
+		Logger: LoggerConfig{
+			Level: defaultLogLevel,
+		},
+		Handler: HandlerConfig{
+			BaseURL: defaultBaseURL,
+		},
 	}
-}
-
-// validateBaseURL валидирует "--base-url" из командной строки.
-func validateBaseURL(value string) error {
-	u, err := url.Parse(value)
-	if err != nil {
-		return fmt.Errorf("parse URL: %w", err)
-	}
-
-	// Тут врапнем, чтобы в сообщении содержалось, какой протокол был на входе
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return fmt.Errorf("%w: %q", ErrUnsupportedURLScheme, u.Scheme)
-	}
-
-	if u.Hostname() == "" {
-		return ErrMissingURLHostname
-	}
-
-	return nil
 }
 
 // newFlagSet объявляет флаги для парсинга.
@@ -102,27 +92,12 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 		"HTTP server listen address",
 	)
 
-	// Регистрируем аргументы с кастомными обработчиками.
-	// Они не ставит дефолты, но мы заранее получаем дефолтную конфигурацию, прежде чем она сюда попадет.
-	// До функции-валидатора дело доходит, только если аргумент передан и распарсен.
-	// Здесь мы должны сами проверить формат, значение и т.д.
-	flagSet.FuncP(
+	flagSet.StringVarP(
+		&cfg.Handler.BaseURL,
 		"base-url",
 		"b",
+		defaultBaseURL,
 		"base URL for shortened links",
-		func(value string) error {
-			// Если здесь получаем ошибку, и возвращаем наверх, pflag оборачивает ее
-			// в *pflag.InvalidValueError, добавляя сведения о флаге и значении.
-			// Затем fs.Parse(args) возвращает эту обернутую ошибку,
-			// а наш Parse возвращает Config{}, err. ИТОГО: удобные ошибки и удобно тестировать.
-			if err := validateBaseURL(value); err != nil {
-				return err
-			}
-
-			// Сохраняем только успешно проверенное значение.
-			cfg.BaseURL = value
-			return nil
-		},
 	)
 
 	flagSet.FuncP(
@@ -139,7 +114,7 @@ func newFlagSet(cfg *Config) *pflag.FlagSet {
 				)
 			}
 
-			cfg.LogLevel = lvl
+			cfg.Logger.Level = lvl
 			return nil
 		},
 	)
