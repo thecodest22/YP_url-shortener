@@ -44,16 +44,20 @@ func Run() error {
 	// принудительно завершать процесс, пока Run не доберется до defer stop().
 	context.AfterFunc(ctx, stop)
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.Logger.Level}))
 
 	st := memory.New()
 	svc := service.NewURLShortener(st)
-	srv := httpserver.New(cfg.Server, handler.NewRouter(logger, svc, cfg.BaseURL))
+	router, err := handler.NewRouter(logger, svc, cfg.Handler.BaseURL)
+	if err != nil {
+		return fmt.Errorf("init router: %w", err)
+	}
+	srv := httpserver.New(cfg.Server, router)
 
 	logger.Info(
 		"starting http server",
 		"addr", cfg.Server.Addr,
-		"log_level", cfg.LogLevel,
+		"log_level", cfg.Logger.Level,
 	)
 
 	if err := srv.Run(ctx); err != nil {
