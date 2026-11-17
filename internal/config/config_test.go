@@ -33,8 +33,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelDebug,
-				BaseURL:  defaultBaseURL,
+				Logger: LoggerConfig{
+					Level: slog.LevelDebug,
+				},
+				Handler: HandlerConfig{
+					BaseURL: defaultBaseURL,
+				},
 			},
 			wantErr: nil,
 		},
@@ -47,8 +51,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelDebug,
-				BaseURL:  defaultBaseURL,
+				Logger: LoggerConfig{
+					Level: slog.LevelDebug,
+				},
+				Handler: HandlerConfig{
+					BaseURL: defaultBaseURL,
+				},
 			},
 			wantErr: nil,
 		},
@@ -61,8 +69,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelWarn,
-				BaseURL:  defaultBaseURL,
+				Logger: LoggerConfig{
+					Level: slog.LevelWarn,
+				},
+				Handler: HandlerConfig{
+					BaseURL: defaultBaseURL,
+				},
 			},
 			wantErr: nil,
 		},
@@ -75,8 +87,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelError,
-				BaseURL:  defaultBaseURL,
+				Logger: LoggerConfig{
+					Level: slog.LevelError,
+				},
+				Handler: HandlerConfig{
+					BaseURL: defaultBaseURL,
+				},
 			},
 			wantErr: nil,
 		},
@@ -89,8 +105,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelInfo,
-				BaseURL:  "http://foo.com",
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "http://foo.com",
+				},
 			},
 			wantErr: nil,
 		},
@@ -103,8 +123,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelInfo,
-				BaseURL:  "http://foo.com",
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "http://foo.com",
+				},
 			},
 			wantErr: nil,
 		},
@@ -117,8 +141,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelInfo,
-				BaseURL:  "http://ya.ru",
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "http://ya.ru",
+				},
 			},
 			wantErr: nil,
 		},
@@ -131,8 +159,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelInfo,
-				BaseURL:  "http://ya.ru",
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "http://ya.ru",
+				},
 			},
 			wantErr: nil,
 		},
@@ -145,8 +177,12 @@ func TestParse(t *testing.T) {
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				LogLevel: slog.LevelInfo,
-				BaseURL:  "http://ya.ru",
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "http://ya.ru",
+				},
 			},
 			wantErr: nil,
 		},
@@ -157,34 +193,34 @@ func TestParse(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "positive: not a URL", // Парсер не отвечает за валидацию, ее выполняет потребитель
+			args: []string{"-b", "bar"},
+			wantCfg: Config{
+				Server: ServerConfig{
+					Addr:              defaultServerAddr,
+					ReadHeaderTimeout: defaultReadHeaderTimeout,
+					ShutdownTimeout:   defaultShutdownTimeout,
+				},
+				Logger: LoggerConfig{
+					Level: defaultLogLevel,
+				},
+				Handler: HandlerConfig{
+					BaseURL: "bar",
+				},
+			},
+			wantErr: nil,
+		},
+		{
 			name:    "negative: unknown args passed",
 			args:    []string{"--foo", "bar"},
 			wantCfg: Config{},
 			wantErr: testutil.ErrorAs[*pflag.NotExistError], // Тут функция только инициализируется из дженерика!
 		},
 		{
-			name:    "negative: invalid base-url: not a URL",
-			args:    []string{"-b", "bar"},
-			wantCfg: Config{},
-			wantErr: testutil.ErrorAs[*pflag.InvalidValueError],
-		},
-		{
 			name:    "negative: invalid log level",
 			args:    []string{"--log-level", "critical"},
 			wantCfg: Config{},
 			wantErr: testutil.ErrorIs(ErrUnsupportedLogLevel), // Тут возвращается обычная функция
-		},
-		{
-			name:    "negative: invalid base-url: unsupported scheme",
-			args:    []string{"-b", "ftp://foo.com"},
-			wantCfg: Config{},
-			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
-		},
-		{
-			name:    "negative: invalid base-url: missing host name",
-			args:    []string{"-b", "http:///some-path"},
-			wantCfg: Config{},
-			wantErr: testutil.ErrorIs(ErrMissingURLHostname),
 		},
 	}
 
