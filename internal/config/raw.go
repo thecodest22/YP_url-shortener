@@ -9,17 +9,17 @@ import (
 )
 
 type rawServerConfig struct {
-	Addr              string        `yaml:"address"`
+	Addr              string        `yaml:"address" env:"SERVER_ADDRESS"`
 	ReadHeaderTimeout time.Duration `yaml:"-"` // Не читаем из ямлика
 	ShutdownTimeout   time.Duration `yaml:"-"`
 }
 
 type rawLoggerConfig struct {
-	Level string `yaml:"level"`
+	Level string `yaml:"level" env:"LOG_LEVEL"`
 }
 
 type rawHandlerConfig struct {
-	BaseURL string `yaml:"base_url"`
+	BaseURL string `yaml:"base_url" env:"BASE_URL"`
 }
 
 // rawConfig - структура конфигов до окончательного преобразования.

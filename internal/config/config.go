@@ -38,7 +38,10 @@ func Load(args []string) (Config, error) {
 	// Применяем флаги из CLI.
 	applyCLI(&raw, cli, fs)
 
-	// TODO Применяем переменные окружения
+	// Применяем переменные окружения.
+	if err := readEnv(&raw); err != nil {
+		return Config{}, err
+	}
 
 	return raw.toConfig(), nil
 }
