@@ -28,7 +28,12 @@ func Load(args []string) (Config, error) {
 		return Config{}, err
 	}
 
-	// TODO Если флаг файла передан, то читаем файл и применяем значения
+	// Если флаг файла передан, то читаем файл и применяем значения.
+	if cli.ConfigPath != "" {
+		if err := readFile(cli.ConfigPath, &raw); err != nil {
+			return Config{}, err
+		}
+	}
 
 	// Применяем флаги из CLI.
 	applyCLI(&raw, cli, fs)

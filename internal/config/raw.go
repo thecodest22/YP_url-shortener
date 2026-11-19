@@ -9,17 +9,17 @@ import (
 )
 
 type rawServerConfig struct {
-	Addr              string
-	ReadHeaderTimeout time.Duration
-	ShutdownTimeout   time.Duration
+	Addr              string        `yaml:"address"`
+	ReadHeaderTimeout time.Duration `yaml:"-"` // Не читаем из ямлика
+	ShutdownTimeout   time.Duration `yaml:"-"`
 }
 
 type rawLoggerConfig struct {
-	Level string
+	Level string `yaml:"level"`
 }
 
 type rawHandlerConfig struct {
-	BaseURL string
+	BaseURL string `yaml:"base_url"`
 }
 
 // rawConfig - структура конфигов до окончательного преобразования.
@@ -28,9 +28,9 @@ type rawHandlerConfig struct {
 // Здесь можем объявлять типы как базовые (string, int и т.д.), чтобы сначала выбрать значение
 // из источника согласно приоритетам, а в конце провалидировать и привести к типу.
 type rawConfig struct {
-	Server  rawServerConfig
-	Logger  rawLoggerConfig
-	Handler rawHandlerConfig
+	Server  rawServerConfig  `yaml:"server"`
+	Logger  rawLoggerConfig  `yaml:"logger"`
+	Handler rawHandlerConfig `yaml:"handler"`
 }
 
 // toConfig возвращает Config со значениями rawConfig
