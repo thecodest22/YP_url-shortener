@@ -8,9 +8,14 @@ import (
 	"time"
 
 	"golang.org/x/sync/errgroup"
-
-	"github.com/thecodest22/YP_url-shortener/internal/config"
 )
+
+// Config конфиг сервера приложения.
+type Config struct {
+	Addr              string
+	ReadHeaderTimeout time.Duration
+	ShutdownTimeout   time.Duration
+}
 
 // Server - http-сервер приложения.
 type Server struct {
@@ -21,7 +26,7 @@ type Server struct {
 // New - инициализирует http-сервер с ручками.
 // Принимаем на вход хэндлер (будем передавать "корневой" роутер), и тогда сервер будет
 // слушать запросы и передавать в функции этого хэндлера (их регистрируем соппсна на корневом роутере).
-func New(cfg config.ServerConfig, h http.Handler) *Server {
+func New(cfg Config, h http.Handler) *Server {
 	return &Server{
 		httpServer: &http.Server{
 			Addr:              cfg.Addr,

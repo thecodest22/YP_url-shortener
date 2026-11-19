@@ -10,6 +10,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+// Config конфиг хэндлера.
+type Config struct {
+	BaseURL string
+}
+
 // handler - структура для использования в корневом роутере.
 // Здесь общие поля, нужные для методов-хэндлеров, объявленных на роутере.
 type handler struct {
@@ -30,16 +35,16 @@ type urlShortener interface {
 func NewRouter(
 	logger *slog.Logger,
 	svc urlShortener,
-	baseURL string,
+	cfg Config,
 ) (http.Handler, error) {
-	if err := validateBaseURL(baseURL); err != nil {
+	if err := validateBaseURL(cfg.BaseURL); err != nil {
 		return nil, fmt.Errorf("base URL: %w", err)
 	}
 
 	h := &handler{
 		logger:  logger,
 		svc:     svc,
-		baseURL: baseURL,
+		baseURL: cfg.BaseURL,
 	}
 
 	mux := chi.NewRouter()
