@@ -1,241 +1,202 @@
 package config
 
 import (
-	"log/slog"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/thecodest22/YP_url-shortener/internal/handler"
+	"github.com/thecodest22/YP_url-shortener/internal/httpserver"
+	"github.com/thecodest22/YP_url-shortener/internal/logger"
 	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
-func TestParse(t *testing.T) {
+// writeCfgFile - хэлпер, создает файл конфигурации.
+func writeCfgFile(t *testing.T, name string, content []byte) (string, error) {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), name)
+	return path, os.WriteFile(path, content, 0600)
+}
+
+// TestLoad тест флоу сборки конфига
+func TestLoad(t *testing.T) {
+	defaults := defaultRawConfig().toConfig()
+
+	fromFile := defaults
+	fromFile.Handler.BaseURL = "https://file.com"
+
+	fromCLI := defaults
+	fromCLI.Handler.BaseURL = "https://cli.com"
+
+	fromEnv := defaults
+	fromEnv.Handler.BaseURL = "https://env.com"
+
 	tests := []struct {
-		name    string
-		args    []string
-		wantCfg Config
-		wantErr testutil.ErrorCheck
+		name        string
+		yamlContent []byte
+		args        []string
+		envs        map[string]string
+		want        Config
 	}{
 		{
-			name:    "positive: no args passed",
-			args:    []string{},
-			wantCfg: defaultConfig(),
-			wantErr: nil,
+			name:        "positive: external values absence preserve program defaults",
+			yamlContent: nil,
+			args:        []string{},
+			envs:        map[string]string{},
+			want:        defaults,
 		},
 		{
-			name: "positive: valid log level",
-			args: []string{"-l", "debug"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
+			name: "positive: file values override program defaults",
+			yamlContent: []byte(`
+                handler:
+                  base_url: "https://file.com"
+            `),
+			args: []string{},
+			envs: map[string]string{},
+			want: fromFile,
+		},
+		{
+			name:        "positive: CLI values override program defaults",
+			yamlContent: nil,
+			args:        []string{"-b", "https://cli.com"},
+			envs:        map[string]string{},
+			want:        fromCLI,
+		},
+		{
+			name:        "positive: env values override program defaults",
+			yamlContent: nil,
+			args:        []string{},
+			envs: map[string]string{
+				"BASE_URL": "https://env.com",
+			},
+			want: fromEnv,
+		},
+		{
+			name: "positive: CLI values override file values",
+			yamlContent: []byte(`
+                handler:
+                  base_url: "https://file.com"
+            `),
+			args: []string{"-b", "https://cli.com"},
+			envs: map[string]string{},
+			want: fromCLI,
+		},
+		{
+			name:        "positive: env values override CLI values",
+			yamlContent: nil,
+			args:        []string{"-b", "https://cli.com"},
+			envs: map[string]string{
+				"BASE_URL": "https://env.com",
+			},
+			want: fromEnv,
+		},
+		{
+			name: "positive: env overrides file and CLI",
+			yamlContent: []byte(`
+                handler:
+                  base_url: "https://file.com"
+            `),
+			args: []string{"-b", "https://cli.com"},
+			envs: map[string]string{
+				"BASE_URL": "https://env.com",
+			},
+			want: fromEnv,
+		},
+		{
+			name: "positive: single vars from all sources",
+			yamlContent: []byte(`
+                server:
+                  address: "localhost:8888"
+            `),
+			args: []string{"--log-level", "ERROR"},
+			envs: map[string]string{
+				"BASE_URL": "https://env.com",
+			},
+			want: Config{
+				Server: httpserver.Config{
+					Addr:              "localhost:8888",
 					ReadHeaderTimeout: defaultReadHeaderTimeout,
 					ShutdownTimeout:   defaultShutdownTimeout,
 				},
-				Logger: LoggerConfig{
-					Level: slog.LevelDebug,
+				Logger: logger.Config{
+					Level: "ERROR",
 				},
-				Handler: HandlerConfig{
-					BaseURL: defaultBaseURL,
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: valid log level",
-			args: []string{"--log-level", "DEBUG"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: slog.LevelDebug,
-				},
-				Handler: HandlerConfig{
-					BaseURL: defaultBaseURL,
+				Handler: handler.Config{
+					BaseURL: "https://env.com",
 				},
 			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: valid log level",
-			args: []string{"-l", "warn"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: slog.LevelWarn,
-				},
-				Handler: HandlerConfig{
-					BaseURL: defaultBaseURL,
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: valid log level",
-			args: []string{"-l", "error"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: slog.LevelError,
-				},
-				Handler: HandlerConfig{
-					BaseURL: defaultBaseURL,
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: base URL passed with full name",
-			args: []string{"--base-url", "http://foo.com"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "http://foo.com",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: base URL passed with shorthand",
-			args: []string{"-b", "http://foo.com"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "http://foo.com",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: base URL passed twice",
-			args: []string{"-b", "http://foo.com", "-b", "http://ya.ru"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "http://ya.ru",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: base URL passed twice",
-			args: []string{"-b", "http://foo.com", "--base-url", "http://ya.ru"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "http://ya.ru",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "positive: base URL passed twice",
-			args: []string{"--base-url", "http://foo.com", "-b", "http://ya.ru"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "http://ya.ru",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name:    "positive: ignorable position args passed",
-			args:    []string{"foo", "bar"},
-			wantCfg: defaultConfig(),
-			wantErr: nil,
-		},
-		{
-			name: "positive: not a URL", // Парсер не отвечает за валидацию, ее выполняет потребитель
-			args: []string{"-b", "bar"},
-			wantCfg: Config{
-				Server: ServerConfig{
-					Addr:              defaultServerAddr,
-					ReadHeaderTimeout: defaultReadHeaderTimeout,
-					ShutdownTimeout:   defaultShutdownTimeout,
-				},
-				Logger: LoggerConfig{
-					Level: defaultLogLevel,
-				},
-				Handler: HandlerConfig{
-					BaseURL: "bar",
-				},
-			},
-			wantErr: nil,
-		},
-		{
-			name:    "negative: unknown args passed",
-			args:    []string{"--foo", "bar"},
-			wantCfg: Config{},
-			wantErr: testutil.ErrorAs[*pflag.NotExistError], // Тут функция только инициализируется из дженерика!
-		},
-		{
-			name:    "negative: invalid log level",
-			args:    []string{"--log-level", "critical"},
-			wantCfg: Config{},
-			wantErr: testutil.ErrorIs(ErrUnsupportedLogLevel), // Тут возвращается обычная функция
 		},
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
-			gotCfg, err := Parse(test.args)
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
+			stashEnvs(
+				t,
+				[]string{
+					"LOG_LEVEL",
+					"SERVER_ADDRESS",
+					"BASE_URL",
+				},
+			)
 
-			if test.wantErr == nil {
-				// Если должно быть без ошибок, то проверяем стандартной функцией
-				require.NoError(t, err, "expected no error")
-			} else {
-				// Если должна быть ошибка, вызываем проверку кастомной функцией, которую сами определили
-				test.wantErr(t, err)
+			if test.yamlContent != nil {
+				f := "config.yaml"
+				path, err := writeCfgFile(t, f, test.yamlContent)
+				require.NoError(t, err, "failed to write test config file %q", f)
+				test.args = append(test.args, "-c", path)
 			}
-			assert.Equal(t, test.wantCfg, gotCfg, "got incorrect configuration")
+
+			if test.envs != nil {
+				setEnvs(t, test.envs)
+			}
+
+			gotCfg, err := Load(test.args)
+
+			require.NoError(t, err, "unexpected error")
+			assert.Equal(t, test.want, gotCfg, "got incorrect configuration")
+		})
+	}
+}
+
+// TestLoadErrors проверяет возврат ошибки и пустой структуры Config из Load.
+func TestLoadErrors(t *testing.T) {
+	stashEnvs(t, []string{
+		"SERVER_ADDRESS",
+		"BASE_URL",
+		"LOG_LEVEL",
+	})
+
+	missingPath := filepath.Join(t.TempDir(), "missing.yaml")
+
+	tests := []struct {
+		name    string
+		args    []string
+		wantErr testutil.ErrorCheck
+	}{
+		{
+			name:    "unknown flag",
+			args:    []string{"--unknown-flag"},
+			wantErr: testutil.ErrorAs[*pflag.NotExistError],
+		},
+		{
+			name:    "missing config file",
+			args:    []string{"--config", missingPath},
+			wantErr: testutil.ErrorIs(fs.ErrNotExist),
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
+			got, err := Load(test.args)
+
+			test.wantErr(t, err)
+			assert.Equal(t, Config{}, got)
 		})
 	}
 }
