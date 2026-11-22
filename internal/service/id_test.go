@@ -1,11 +1,10 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestGenerateID(t *testing.T) {
@@ -20,7 +19,7 @@ func TestGenerateID(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			id := generateID(test.length)
 
 			assert.Len(t, id, test.length)

@@ -1,11 +1,10 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestValidateURL(t *testing.T) {
@@ -62,7 +61,7 @@ func TestValidateURL(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			err := validateURL(test.url)
 
 			if test.wantErr == nil {
@@ -143,7 +142,7 @@ func TestIsIDValid(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			assert.Equal(t, test.want, isIDValid(test.id))
 		})
 	}

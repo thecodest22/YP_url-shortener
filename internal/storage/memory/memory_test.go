@@ -2,12 +2,12 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/thecodest22/YP_url-shortener/internal/storage"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestStorage_Write(t *testing.T) {
@@ -58,7 +58,7 @@ func TestStorage_Write(t *testing.T) {
 	ctx := context.Background()
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			st := New()
 			st.urls = maps.Clone(test.initURLs)
 			err := st.Write(ctx, test.key, test.url)
@@ -100,7 +100,7 @@ func TestStorage_Read(t *testing.T) {
 	ctx := context.Background()
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			st := New()
 			st.urls = maps.Clone(test.initURLs)
 			url, err := st.Read(ctx, test.key)

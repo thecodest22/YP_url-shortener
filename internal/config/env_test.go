@@ -1,12 +1,12 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 // setEnvs - хелпер, накидывает переменные среды на время теста.
@@ -122,7 +122,7 @@ func TestReadEnv(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			got := initial
 
 			// Прячем переменные среды и накидываем нужные.

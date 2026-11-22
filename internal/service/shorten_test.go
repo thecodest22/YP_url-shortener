@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/thecodest22/YP_url-shortener/internal/storage"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestServiceShorten(t *testing.T) {
@@ -105,7 +104,7 @@ func TestServiceShorten(t *testing.T) {
 	ctx := context.Background()
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			// Для отработки функции "Shorten" у сервиса должно быть хранилище с методами "Write" и "Read".
 			// Настраиваем мок хранилища, чтобы его функция Write работала нужным образом.
 			st := &mockURLStorage{

@@ -36,6 +36,9 @@ func TestStatusHandler(t *testing.T) {
 	// Он будет писать в никуда, т.к. io.Discard.Write устроена так, что она
 	// просто возвращает успешный ответ, никак не используя и никуда не сохраняя переданные байты.
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cfg := Config{
+		BaseURL: baseURL,
+	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -48,7 +51,7 @@ func TestStatusHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			// Функция "healthz" не работает с сервисом, поэтому передаем nil вместо сервиса.
-			router, err := NewRouter(logger, nil, baseURL)
+			router, err := NewRouter(logger, nil, cfg)
 			require.NoError(t, err, "router init failed")
 
 			// Вызовем не просто метод на структуре хэндлера, а именно через ServeHTTP,

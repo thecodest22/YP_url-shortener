@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestReadFile(t *testing.T) {
@@ -112,7 +112,7 @@ func TestReadFile(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			got := initial
 
 			// Пишем файл во временную директорию TempDir ее сам создаст и удалит после теста.

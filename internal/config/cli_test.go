@@ -1,11 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 // TestApplyCLI тестирует функцию применения флагов командной строки к переданному конфигу.
@@ -142,7 +142,7 @@ func TestApplyCLI(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			got := initial
 
 			var cli cliOptions

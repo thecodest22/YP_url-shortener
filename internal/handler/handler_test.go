@@ -3,6 +3,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -61,45 +62,57 @@ func (s *mockURLShortener) Resolve(_ context.Context, id string) (string, error)
 func TestNewRouter(t *testing.T) {
 	tests := []struct {
 		name    string
-		url     string
+		cfg     Config
 		wantErr testutil.ErrorCheck
 	}{
 		{
-			name:    "positive: valid URL with http scheme",
-			url:     "http://localhost:8080",
+			name: "positive: valid URL with http scheme",
+			cfg: Config{
+				BaseURL: "http://localhost:8080",
+			},
 			wantErr: nil,
 		},
 		{
-			name:    "positive: valid URL with https scheme",
-			url:     "https://google.com",
+			name: "positive: valid URL with https scheme",
+			cfg: Config{
+				BaseURL: "https://google.com",
+			},
 			wantErr: nil,
 		},
 		{
-			name:    "negative: not a URL",
-			url:     "foo",
+			name: "negative: not a URL",
+			cfg: Config{
+				BaseURL: "foo",
+			},
 			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
 		},
 		{
-			name:    "negative: unsupported scheme",
-			url:     "ftp://foo.com",
+			name: "negative: unsupported scheme",
+			cfg: Config{
+				BaseURL: "ftp://foo.com",
+			},
 			wantErr: testutil.ErrorIs(ErrUnsupportedURLScheme),
 		},
 		{
-			name:    "negative: missing hostname",
-			url:     "https:///foo",
+			name: "negative: missing hostname",
+			cfg: Config{
+				BaseURL: "https:///foo",
+			},
 			wantErr: testutil.ErrorIs(ErrMissingURLHostname),
 		},
 		{
-			name:    "negative: invalid URL escape",
-			url:     "http://example.com/%zz",
+			name: "negative: invalid URL escape",
+			cfg: Config{
+				BaseURL: "http://example.com/%zz",
+			},
 			wantErr: testutil.ErrorAs[*url.Error],
 		},
 	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 
-			router, err := NewRouter(nil, nil, test.url)
+			router, err := NewRouter(nil, nil, test.cfg)
 
 			// ------- Проверки -------
 			if test.wantErr != nil {
@@ -153,12 +166,15 @@ func TestRouter_Routing(t *testing.T) {
 	}
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cfg := Config{
+		BaseURL: baseURL,
+	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			svc := &mockURLShortener{}
 
-			router, err := NewRouter(logger, svc, baseURL)
+			router, err := NewRouter(logger, svc, cfg)
 			require.NoError(t, err, "router init failed")
 
 			w := httptest.NewRecorder()
