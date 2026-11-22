@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/thecodest22/YP_url-shortener/internal/service"
-	"github.com/thecodest22/YP_url-shortener/internal/testutil"
 )
 
 func TestHandlerResolve(t *testing.T) {
@@ -138,9 +137,12 @@ func TestHandlerResolve(t *testing.T) {
 	}
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cfg := Config{
+		BaseURL: baseURL,
+	}
 
 	for i, test := range tests {
-		t.Run(testutil.GetSubtestTitle(i+1, test.name), func(t *testing.T) {
+		t.Run(fmt.Sprintf("test #%d %s", i+1, test.name), func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, baseURL+test.req.path, nil)
 
 			// Для отработки функции "resolve" у хэдлера должен быть сервис с соответствующей функцией.
@@ -152,7 +154,7 @@ func TestHandlerResolve(t *testing.T) {
 				},
 			}
 
-			router, err := NewRouter(logger, svc, baseURL)
+			router, err := NewRouter(logger, svc, cfg)
 			require.NoError(t, err, "router init failed")
 
 			w := httptest.NewRecorder()
